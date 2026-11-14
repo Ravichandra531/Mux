@@ -1,159 +1,20 @@
-# Turborepo starter
+# Mux
 
-This Turborepo starter is maintained by the Turborepo core team.
+Mux is a local workspace for coding agents. The Bun backend stores workspaces and sessions in MongoDB and runs the selected agent in the project directory. The Vite frontend serves the landing page at `/` and the workspace at `/app`.
 
-## Using this example
+## Setup
 
-Run the following command:
+Install Bun 1.3.13 and MongoDB, then run `bun install` from the repository root. Set `DB_URL` in `apps/backend/.env` to a MongoDB connection string, for example `mongodb://127.0.0.1:27017/mux`. Authenticate Claude Code or configure the credentials required by the Claude Agent SDK. Run `bun run dev` and open `http://localhost:5173`.
 
-```sh
-npx create-turbo@latest
-```
+In the workspace, enter an existing absolute directory path, add a session, and send a message. The backend listens on `127.0.0.1:3001`; Vite proxies `/ws` to it. The backend is intended for local use and has no account authentication.
 
-## What's inside?
+Use `bun run check-types`, `bun run lint`, and `bun run build` to verify the monorepo. A production deployment requires a WebSocket proxy and appropriate access controls; Vite's development proxy is not a production server.
 
-This Turborepo includes the following packages/apps:
+## Session options
 
-### Apps and Packages
+Choose a Claude model in the composer, or use the default configured by Claude Code. Completed turns display the token usage and estimated cost reported by the Claude SDK; these figures are estimates rather than billing totals. Enable the Git worktree option before creating a session to create a separate branch and folder next to the project. Worktrees are retained for manual inspection and cleanup.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+To use an ACP-compatible agent, set `ACP_COMMAND` to the executable and optionally set `ACP_ARGS` to a JSON array of arguments in the backend environment. Select ACP agent before creating a session. The agent must support ACP protocol version 1 over newline-delimited JSON on standard input and output. Session continuation requires the agent to support `session/load`. Mux currently declines ACP permission requests and does not support ACP client filesystem or terminal requests; use agents that can operate within those limitations. ACP usage and model selection are not yet supported.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo build
-bun dlx turbo build
-bun exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-bun exec turbo build --filter=docs
-bun exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-bun exec turbo dev
-bun exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-bun exec turbo dev --filter=web
-bun exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-bun exec turbo login
-bun exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-bun exec turbo link
-bun exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Codex sessions use the local `codex` executable and its existing login. Install and authenticate the Codex CLI before use; optionally set `CODEX_COMMAND` to the executable path. Cursor sessions use `@cursor/sdk`. Run `bun install` from the repository root to install it, then run `bun run --filter backend cursor:login` to sign in through a browser. Cursor stores an SDK credential locally after login. Alternatively, set `CURSOR_API_KEY` in the backend environment. Select the provider before creating a session; an optional model ID can be entered in the composer. Token counts are shown when reported; dollar estimates are only shown when provided by the provider.
+# Mux
