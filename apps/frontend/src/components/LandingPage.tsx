@@ -67,9 +67,9 @@ export function LandingPage() {
               Orchestrate Claude Code, Codex, OpenCode, Cursor, and Grok from one surface. Bring your own subscription. Fork the whole thing.
             </p>
             <div className="hero-actions">
-              <a id="download-btn" href="/app" className="btn btn-primary btn-lg">
+              <a id="download-btn" href="/signup" className="btn btn-primary btn-lg">
                 <AppleIcon />
-                <span id="download-label">Open workspace</span>
+                <span id="download-label">Create account</span>
               </a>
               <a className="hero-source-link" href="#" target="_blank" rel="noopener noreferrer">
                 <svg className="hero-source-mark" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
