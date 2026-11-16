@@ -4,7 +4,7 @@ import { PermissionPrompt } from "./PermissionPrompt";
 import { SessionControls } from "./SessionControls";
 import "./workspace.css";
 
-export function WorkspaceApp() {
+export function WorkspaceApp({ pairingToken }: { pairingToken?: string }) {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [path, setPath] = useState("");
@@ -39,9 +39,9 @@ export function WorkspaceApp() {
     let timer: ReturnType<typeof setTimeout>;
     const connect = () => {
       setStatus("connecting");
-      const ws = new WebSocket(
-        `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`,
-      );
+      const ws = pairingToken
+        ? new WebSocket("ws://127.0.0.1:3001/ws", ["mux-v1", pairingToken])
+        : new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`);
       socket.current = ws;
       ws.onopen = () => {
         setStatus("connected");
@@ -158,7 +158,7 @@ export function WorkspaceApp() {
       clearTimeout(timer);
       socket.current?.close();
     };
-  }, []);
+  }, [pairingToken]);
   const send = (message: ClientMessage) => {
     if (socket.current?.readyState !== WebSocket.OPEN) {
       setError(

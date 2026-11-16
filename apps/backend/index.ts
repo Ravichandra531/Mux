@@ -1,6 +1,7 @@
 import { mongoose } from "db/client";
 import { UserManager } from "./UserManager";
 import { handleAuth } from "./auth";
+import { authorizeCompanion } from "./companion-auth";
 
 const uri = process.env.DB_URL || process.env.db_url;
 if (!uri) {
@@ -9,23 +10,28 @@ if (!uri) {
 await mongoose.connect(uri);
 const manager = new UserManager();
 const port = Number(process.env.PORT || 3001);
+const companion = process.env.MUX_COMPANION === "1";
+const pairingSecret = process.env.MUX_PAIRING_TOKEN || "";
+if (companion && !/^[a-f0-9]{64}$/.test(pairingSecret)) throw new Error("Companion mode requires a 64 character pairing token.");
 Bun.serve<{ id: string }>({
   port,
-  hostname: process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1",
+  hostname: companion || process.env.NODE_ENV !== "production" ? "127.0.0.1" : "0.0.0.0",
   async fetch(request, server) {
-    const authResponse = await handleAuth(request);
+    const authResponse = companion ? null : await handleAuth(request);
     if (authResponse) return authResponse;
     const url = new URL(request.url);
     const origin = request.headers.get("origin");
+    if (companion && url.pathname === "/ws" && authorizeCompanion(origin, request.headers.get("sec-websocket-protocol"), pairingSecret) &&
+        server.upgrade(request, { data: { id: crypto.randomUUID() }, headers: { "Sec-WebSocket-Protocol": "mux-v1" } })) return;
     if (
-      process.env.NODE_ENV !== "production" && url.pathname === "/ws" &&
+      !companion && process.env.NODE_ENV !== "production" && url.pathname === "/ws" &&
       (!origin ||
         /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) &&
       server.upgrade(request, { data: { id: crypto.randomUUID() } })
     ) {
       return;
     }
-    if (process.env.NODE_ENV === "production" && url.pathname !== "/ws") {
+    if (!companion && process.env.NODE_ENV === "production" && url.pathname !== "/ws") {
       const relative = decodeURIComponent(url.pathname).replace(/^\/+/, "");
       if (relative.includes("..") || relative.includes("\\")) return new Response("Not found", { status: 404 });
       const file = Bun.file(`../frontend/dist/${relative || "index.html"}`);
